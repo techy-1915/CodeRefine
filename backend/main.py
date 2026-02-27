@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from routes.analyze import router as analyze_router
 from routes.auth import router as auth_router
 from config.settings import ALLOWED_ORIGINS
-from models.database import init_db
 
 load_dotenv()
 
@@ -18,8 +17,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*", "Authorization"],
 )
-
-init_db()
 
 app.include_router(analyze_router)
 app.include_router(auth_router)
