@@ -2,3 +2,6 @@ fastapi[standard]
 groq
 python-dotenv
 bandit
+PyJWT
+passlib[bcrypt]
+sqlalchemy

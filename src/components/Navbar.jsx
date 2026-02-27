@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, Code2, FolderOpen, History, BarChart3, ChevronDown, User, Settings, LogOut, Search } from 'lucide-react'
 import { searchResults } from '../data/mockData'
+import { logout } from '../services/auth'
 
 function Navbar() {
   const location = useLocation()
@@ -158,7 +159,7 @@ function Navbar() {
                         <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
                           <Settings size={14} /> Settings
                         </button>
-                        <button onClick={() => { setProfileOpen(false); navigate('/') }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors border-t border-white/10">
+                        <button onClick={() => { setProfileOpen(false); logout().then(() => navigate('/')) }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors border-t border-white/10">
                           <LogOut size={14} /> Logout
                         </button>
                       </motion.div>

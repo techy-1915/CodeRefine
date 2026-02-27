@@ -1,18 +1,27 @@
-from fastapi import APIRouter
+import uuid
+import json
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 import logging
+from sqlalchemy.orm import Session
 from models.analysis_request import AnalysisRequest
+from models.database import AnalysisHistory, get_db
 from services.static_analyzer import run_static_analysis
 from services.groq_service import analyze_with_groq
 from services.aggregation_engine import aggregate_issues
 from services.confidence_engine import compute_confidence
+from middleware.auth_middleware import get_current_user
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
 @router.post("/analyze")
-async def analyze(request: AnalysisRequest):
+async def analyze(
+    request: AnalysisRequest,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     try:
         # 1. Run static analysis
         static_issues = run_static_analysis(request.language, request.code)
@@ -31,6 +40,21 @@ async def analyze(request: AnalysisRequest):
 
         # 4. Compute confidence score
         confidence = compute_confidence(aggregated)
+
+        # 5. Store analysis result
+        history = AnalysisHistory(
+            id=str(uuid.uuid4()),
+            user_id=current_user.id,
+            project_id=getattr(request, "project_id", None),
+            code_input=request.code,
+            ai_output=json.dumps({
+                "ai_suggestions": groq_result["ai_issues"],
+                "optimized_code": groq_result["optimized_code"],
+                "explanation": groq_result.get("explanation", ""),
+            }),
+        )
+        db.add(history)
+        db.commit()
 
         return {
             "static_issues": static_issues,

@@ -1,14 +1,26 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
+import { login } from '../services/auth'
 
 function LoginPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '', remember: false })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    navigate('/dashboard')
+    setError('')
+    setLoading(true)
+    try {
+      await login(form.email, form.password)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message || 'Login failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -68,12 +80,14 @@ function LoginPage() {
             </div>
             <motion.button
               type="submit"
+              disabled={loading}
               whileTap={{ scale: 0.98 }}
               whileHover={{ scale: 1.01 }}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg shadow-blue-500/20"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Sign In
+              {loading ? 'Signing in…' : 'Sign In'}
             </motion.button>
+            {error && <p className="text-sm text-red-400 text-center">{error}</p>}
           </form>
           <p className="text-center text-sm text-gray-400 mt-6">
             Don&apos;t have an account?{' '}
